@@ -66,7 +66,9 @@ export const useContainerStore = create<any>((set, get) => ({
 
   handleUrl: async (url: any, append: any = false) => {
     console.log('handleUrl invoked', url);
-    await get().handleUrlInner(url, append);
+    threadPool.submit(async () => {
+      await get().handleUrlInner(url, append);
+    })
   },
 
   handleNext: async () => {
@@ -163,7 +165,7 @@ export const useContainerStore = create<any>((set, get) => ({
 
   closeContent: (index) => {
     set({
-      contentData: get().contentData.slice(index, 1)
+      contentData: get().contentData.filter((_: any, i: any) => index != i)
     })
     if (get().contentData.length == 0) {
       get().selectNextItem();

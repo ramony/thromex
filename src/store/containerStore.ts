@@ -32,6 +32,7 @@ export const useContainerStore = create<any>((set, get) => ({
     console.log('loadConfig invoked');
     let rules = await ConfigLoad.loadRules()
     contentParse = new ContentParse(rules);
+    threadPool = new ThreadPool(3, () => { set({ loading: true }) }, () => { set({ loading: false }) }, 1);
     await get().handleEntry();
   },
 
@@ -56,44 +57,16 @@ export const useContainerStore = create<any>((set, get) => ({
     get().handleUrl(item.urlFn || item.url);
   },
 
-  handleUrl: async (urls, append, isListing) => {
-    console.log('handleUrl invoked');
-    // if (!urls || !contentParse) {
-    //   return;
-    // }
-    if (!Object.prototype.toString.call(urls).includes('Array')) {
-      urls = [urls];
-    }
-    // set({ loading: true })
+  handleUrls: async (urls: any, append = false) => {
+    console.log('handleUrls invoked', urls);
+    for (const url of urls) {
+      await get().handleUrl(url, append)
+    };
+  },
 
-    // urls = await contentParse.flatUrl(urls);
-    if (threadPool == null) {
-      threadPool = new ThreadPool(3, () => { set({ loading: true }) }, () => { set({ loading: false }) }, 1);
-    }
-    if (urls.length > 0) {
-      if (!append) {
-        //reset list view.
-        const url = urls.shift();
-        // await this.handleUrlInner(urls.shift(), false);
-        console.log('threadPool', threadPool)
-        threadPool.submit(async () => {
-          await get().handleUrlInner(url, false)
-        })
-      }
-      if (urls.length > 0) {
-        for (const url of urls) {
-          if (isListing) {
-            await get().handleUrlInner(url, true);
-            continue;
-          }
-          //await this.handleUrlInner(url, true)
-          threadPool.submit(async () => {
-            await get().handleUrlInner(url, true)
-          })
-        };
-      }
-    }
-    //  set({ loading: false })
+  handleUrl: async (url: any, append: any = false) => {
+    console.log('handleUrl invoked', url);
+    await get().handleUrlInner(url, append);
   },
 
   handleNext: async () => {
@@ -131,8 +104,8 @@ export const useContainerStore = create<any>((set, get) => ({
       get().handleListingData(result, append);
       if (get().autoDisplay && result?.autoDisplayList) {
         console.log('auto display count:', result.listingData.length);
-        const itemUrls = result.listingData.map(item => item.url);
-        setTimeout(async () => get().handleUrl(itemUrls, true), 1)
+        const itemUrls = result.listingData.map((item: { url: any; }) => item.url);
+        setTimeout(async () => get().handleUrls(itemUrls, true), 1)
       }
     } else {
       get().handleContentData(result, append)

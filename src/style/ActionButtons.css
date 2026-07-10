@@ -1,0 +1,19 @@
+.ActionButtons {
+  text-align: center;
+  padding: 2px;
+  height: 30px;
+}
+
+.Action-Button-Box {
+  line-height: 30px;
+}
+
+.Action-Button-Box>* {
+  vertical-align: middle;
+  margin-left: 20px;
+  cursor: pointer;
+}
+
+.Listing-Tips {
+  float: right;
+}

@@ -1,5 +1,7 @@
 version: '3.8'
 
+ # 自定义项目名，覆盖文件夹名
+name: throme
 services:
   thromeapi:
     build: .
@@ -10,7 +12,14 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=192.168.0.113
+      - DB_HOST=mysql
     volumes:
       # 开发热重载用，生产注释掉
       - ./src:/app/src
+    networks:
+      - throme_default
+
+networks:
+  throme_default:
+    external: true
+    name: throme_default # 这里填刚才查到的旧网络全名

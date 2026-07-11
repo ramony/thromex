@@ -1,4 +1,4 @@
-const API_HOST = 'http://localhost:30080/api/v1';
+const API_HOST = 'http://localhost:3003/api/v1';
 
 const ApiHost = {
   GetAPIHost: () => {

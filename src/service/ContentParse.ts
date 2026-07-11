@@ -68,7 +68,7 @@ class ContentParse {
     let responseData;
     let { data, success, errorMsg } = await HttpAdaptor.getHtml(contentUrl, params.encoding);
     if (success) {
-      //document.getElementsByTagName("base")[0].setAttribute('href', contentUrl);
+      document.getElementsByTagName("base")[0]?.setAttribute('href', contentUrl);
       if (rule.dataRule === 'json') {
         let jData = JSON.parse(data);
         if (jData.success == false) {
@@ -147,9 +147,12 @@ class ContentParse {
       return null;
     }
     if (!/^(http|query)/.test(parsedUrl)) {
+      console.log('1', location.href, parsedUrl)
+
       var a = document.createElement('a');
       a.setAttribute('href', parsedUrl);
       parsedUrl = a.href;
+      console.log('2', location.href, parsedUrl)
     }
     return parsedUrl;
   }

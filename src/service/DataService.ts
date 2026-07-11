@@ -1,4 +1,4 @@
-import { createDetailApi, queryApi, markReadByDetailIdApi, markReadLaterByDetailIdApi } from '@/api/DetailRespository';
+import HttpClient from '~/utils/HttpClient';
 import ApiHost from '~/utils/ApiHost';
 
 const LocalCache = {
@@ -15,14 +15,6 @@ const LocalCache = {
   }
 }
 
-const CreateJson = (jsonData) => {
-  console.log('jsonData.success', jsonData.success)
-  if (jsonData.success == undefined) {
-    return { success: true, data: jsonData };
-  }
-  return jsonData;
-};
-
 const DetailKeyFun = (detailId, detailType) => (detailType + '-' + detailId);
 
 const DataService = {
@@ -31,16 +23,16 @@ const DataService = {
     return LocalCache.exist(DetailKeyFun(detailId, detailType));
   },
 
-  setLocalMarked(detailId, detailType) {
-    LocalCache.marked(DetailKeyFun(detailId, detailType));
-  },
-
   async markReadByDetailId(detailId, detailType) {
-    return await markReadByDetailIdApi(detailType, detailId);
+    console.log('markReadByDetailId', detailId, detailType)
+    //LocalCache.marked(DetailKeyFun(detailId, detailType));
+    return await HttpClient.postJSON(ApiHost.GetAPIHost() + '/detail/markReadByDetailId', { detailId, detailType });
   },
 
   async markReadLater(detailId, detailType, score) {
-    return await markReadLaterByDetailIdApi(detailType, detailId);
+    console.log('markReadLater', detailId, detailType)
+    //LocalCache.marked(DetailKeyFun(detailId, detailType));
+    return await HttpClient.postJSON(ApiHost.GetAPIHost() + '/detail/markReadLater', { detailId, detailType, score });
   },
 
   async markAllReadWithSameKeyword(callback) {
@@ -58,8 +50,7 @@ const DataService = {
   },
 
   async createDetail(rdata, callback, errorCallback) {
-    var result = await createDetailApi(rdata);
-    console.log('result', result)
+    var result = await HttpClient.postJSON(ApiHost.GetAPIHost() + '/detail/createDetail', rdata);
     if (result.success) {
       callback(result.data);
       return result.data;
@@ -69,10 +60,12 @@ const DataService = {
     }
   },
 
+  async createList(rdata) {
+    return await HttpClient.postJSON(ApiHost.GetAPIHost() + '/listing/createList', rdata);
+  },
 
-  async queryDetail(query) {
-    let queryResult = await queryApi(query);
-    return CreateJson(queryResult);
+  async listingExist(url) {
+    return await HttpClient.getJSON(ApiHost.GetAPIHost() + '/listing/exist?pageUrl=' + url);
   }
 
 }

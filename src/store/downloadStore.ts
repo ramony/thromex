@@ -2,7 +2,7 @@ import { create } from "zustand"
 
 import ConfigLoad from '~/service/ConfigLoad';
 import ContentParse from '~/service/ContentParse';
-// import DataService from '@/service/DataService';
+import DataService from '~/service/DataService';
 import { toBigInt } from '~/utils/StringUtils';
 import Unsafe from '~/utils/Unsafe';
 // import { nanoid } from 'nanoid'
@@ -28,34 +28,34 @@ export const useDownloadStore = create<any>((set, get) => ({
 
   startDownload: async () => {
     //start to download from remote server.
-
-    if (get().downloadList.length < 1) {
-      get().buildLog(['Download list is required']);
+    const { downloadList, addLogs, filterListingData } = get()
+    if (downloadList.length < 1) {
+      addLogs(['Download list is required']);
       return;
     }
     let rules = await ConfigLoad.loadRules();
     let contentParse = new ContentParse(rules);
-    get().addLogs("Start job");
-    for (let item of get().downloadList) {
+    addLogs("Start job");
+    for (let item of downloadList) {
       if (!item.checked) {
         continue;
       }
       for (let i = item.from; i < item.to; i++) {
         let url = item.url.replace("{pageNo}", i);
         let { listingData = [] } = await contentParse.parse(url, false);
-        listingData = get().filterListingData(listingData, i, contentParse, item.skipTitleKeyword);
-        // let insertCount = await DataService.createDetail(listingData, count => {
-        //   get().addLogs(`Done ${url}, count=${count}`)
-        //   // DataService.createList({ pageUrl: url });
-        // }, (errorMsg) => {
-        //   get().addLogs(`Error to fetch ${url}, errorMsg: ${errorMsg}`)
-        // });
-        // if (insertCount === 0 && item.skip) {
-        //   break;
-        // }
+        listingData = filterListingData(listingData, i, contentParse, item.skipTitleKeyword);
+        let insertCount = await DataService.createDetail(listingData, count => {
+          addLogs(`Done ${url}, count=${count}`)
+          // DataService.createList({ pageUrl: url });
+        }, (errorMsg) => {
+          get().addLogs(`Error to fetch ${url}, errorMsg: ${errorMsg}`)
+        });
+        if (insertCount === 0 && item.skip) {
+          break;
+        }
       }
     }
-    get().addLogs("Done.")
+    addLogs("Done.")
   },
 
   filterListingData: (listingData, pageNo, contentParse, skipTitleKeyword) => {
@@ -88,15 +88,16 @@ export const useDownloadStore = create<any>((set, get) => ({
   },
 
   markAllReadWithSameKeyword: async () => {
-    // DataService.markAllReadWithSameKeyword(res => {
-    //   this.addLogs('processCount:' + res.data);
-    // });
+    const { addLogs } = get()
+    DataService.markAllReadWithSameKeyword(res => {
+      addLogs('processCount:' + res.data);
+    });
   },
 
   addLogs: (newLog) => {
-    set(prev => {
+    set(prev => ({
       logs: [...prev.logs, newLog]
-    })
+    }))
   },
 
   changeText: (index, keyName, e) => {

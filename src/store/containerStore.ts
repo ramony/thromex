@@ -2,7 +2,7 @@
 import { create } from "zustand"
 
 import ConfigLoad from '~/service/ConfigLoad';
-// import DataService from '@/service/DataService';
+import DataService from '~/service/DataService';
 import ContentParse from '~/service/ContentParse';
 // import { nanoid } from 'nanoid'
 import ApiHost from '~/utils/ApiHost';
@@ -178,13 +178,13 @@ export const useContainerStore = create<any>((set, get) => ({
 
   removeContent: (index, item) => {
     let contentIds = item.contentIds;
-    //  DataService.markReadByDetailId(contentIds[0], contentIds[1])
+    DataService.markReadByDetailId(contentIds[0], contentIds[1])
     get().closeContent(index);
   },
 
   markLaterContent: (index, item) => {
     let contentIds = item.contentIds;
-    // DataService.markReadLater(contentIds[0], contentIds[1], 10)
+    DataService.markReadLater(contentIds[0], contentIds[1], 10)
     get().closeContent(index);
   }
 

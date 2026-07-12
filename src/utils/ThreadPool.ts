@@ -7,14 +7,17 @@ class ThreadPool {
   onStart: any;
   onEnd: any;
   waitingMs: any;
-  constructor(maxThreads, onStart, onEnd, waitingMs) {
+  constructor(maxThreads = 1, waitingMs = 500) {
     this.maxThreads = maxThreads;
     this.activeThreads = 0;
     this.taskQueue = [];
     this.loading = false;
+    this.waitingMs = waitingMs || 1000;
+  }
+
+  subscribe(onStart, onEnd) {
     this.onStart = onStart;
     this.onEnd = onEnd;
-    this.waitingMs = waitingMs || 1000;
   }
 
   // 添加任务到队列

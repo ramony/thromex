@@ -10,7 +10,11 @@ class ContentParse {
 
   ruleMatcher: RuleMatcher;
 
-  constructor(rules) {
+  constructor() {
+
+  }
+
+  addRules(rules) {
     this.ruleMatcher = new RuleMatcher(rules || []);
   }
 
@@ -21,7 +25,7 @@ class ContentParse {
     // return DataService.checkLocalMarked(...contentIds)
   }
 
-  async parse(contentUrl, append): Promise<any> {
+  async parse(contentUrl): Promise<any> {
     contentUrl = Unsafe.fixExpiredUrl(contentUrl);
     contentUrl = this.filterUrl(contentUrl);
 
@@ -36,9 +40,9 @@ class ContentParse {
       return { unMatched: true };
     }
 
-    if (this.checkUrlRead(urlRule.contentIds) && append) {
-      return;
-    }
+    // if (this.checkUrlRead(urlRule.contentIds) && append) {
+    //   return;
+    // }
 
     console.log('get parser for contentUrl:' + contentUrl);
     return this.sendRequest(contentUrl, urlRule);

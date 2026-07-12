@@ -8,9 +8,9 @@ import ContentParse from '~/service/ContentParse';
 import ApiHost from '~/utils/ApiHost';
 import ThreadPool from '~/utils/ThreadPool'
 
-let contentParse = null
+const contentParse = new ContentParse();
 const nextUrlVisitSet = new Set();
-let threadPool = null;
+const threadPool = new ThreadPool(3, 100);
 
 export const useContainerStore = create<any>((set, get) => ({
 
@@ -28,12 +28,14 @@ export const useContainerStore = create<any>((set, get) => ({
 
   totalPages: null,
 
-  loadConfig: async () => {
+  init: async () => {
     console.log('loadConfig invoked');
     let rules = await ConfigLoad.loadRules()
-    contentParse = new ContentParse(rules);
-    threadPool = new ThreadPool(3, () => { set({ loading: true }) }, () => { set({ loading: false }) }, 1);
-    await get().handleEntry();
+    contentParse.addRules(rules);
+    const loadingFn = (loading: boolean) => {
+      return () => set({ loading })
+    }
+    threadPool.subscribe(loadingFn(true), loadingFn(false));
   },
 
   handleEntry: async () => {
@@ -42,47 +44,49 @@ export const useContainerStore = create<any>((set, get) => ({
   },
 
   selectNextItem: async () => {
-    let { index } = get().listingSelected;
-    if (index >= 0) {
-      get().handleItemSelected(index + 1);
+    const { listingSelected, handleItemSelected } = get();
+    if (listingSelected >= 0) {
+      handleItemSelected(listingSelected + 1);
     }
   },
 
   handleItemSelected: async (index) => {
-    if (index >= get().listingData.length) {
+    const { listingData, handleUrl } = get();
+    if (index >= listingData.length) {
       return;
     }
-    let item = get().listingData[index];
+    let item = listingData[index];
     set({ listingSelected: { url: item.url, index } });
-    get().handleUrl(item.urlFn || item.url);
+    handleUrl(item.urlFn || item.url);
   },
 
   handleUrls: async (urls: any, append = false) => {
     console.log('handleUrls invoked', urls);
+    const { handleUrl } = get();
     for (const url of urls) {
-      await get().handleUrl(url, append)
+      await handleUrl(url, append)
     };
   },
 
   handleUrl: async (url: any, append: any = false) => {
     console.log('handleUrl invoked', url);
+    const { handleUrlInner } = get();
     threadPool.submit(async () => {
-      await get().handleUrlInner(url, append);
+      await handleUrlInner(url, append);
     })
   },
 
   handleNext: async () => {
-    let url = get().listingNext;
-    if (!url) {
+    const { listingNext, handleUrl } = get();
+    if (!listingNext) {
       return;
     }
-    if (nextUrlVisitSet.has(url)) {
+    if (nextUrlVisitSet.has(listingNext)) {
       return;
     }
-    nextUrlVisitSet.add(url);
-    console.log('handleNext invoked, url:', url);
-
-    get().handleUrl(url, true, true);
+    nextUrlVisitSet.add(listingNext);
+    console.log('handleNext invoked, url:', listingNext);
+    handleUrl(listingNext, true, true);
   },
 
   handleUrlInner: async (url, append) => {
@@ -90,7 +94,7 @@ export const useContainerStore = create<any>((set, get) => ({
     if (url) {
       url = url.replace('@apiHost@', ApiHost.GetAPIHost());
     }
-    let result = await contentParse.parse(url, append);
+    let result = await contentParse.parse(url);
     if (!result) {
       return;
     }
@@ -98,19 +102,17 @@ export const useContainerStore = create<any>((set, get) => ({
       console.log('No rule for url', url);
       return;
     }
+    const { autoDisplay, handleListingData, handleUrls, handleContentData } = get();
+
     if (result.listFlag) {
-      set({
-        totalPages: result.totalPages,
-        listingNext: result.listingNext
-      })
-      get().handleListingData(result, append);
-      if (get().autoDisplay && result?.autoDisplayList) {
+      handleListingData(result, append);
+      if (autoDisplay && result?.autoDisplayList) {
         console.log('auto display count:', result.listingData.length);
         const itemUrls = result.listingData.map((item: { url: any; }) => item.url);
-        setTimeout(async () => get().handleUrls(itemUrls, true), 1)
+        setTimeout(async () => handleUrls(itemUrls, true), 1)
       }
     } else {
-      get().handleContentData(result, append)
+      handleContentData(result, append)
       if (!append) {
         //if new content, reset scrollTop value.
         document.getElementsByClassName("Content")[0].scrollTop = 0;
@@ -121,13 +123,17 @@ export const useContainerStore = create<any>((set, get) => ({
   handleListingData: (result, append) => {
     if (append) {
       set((prev: { listingData: any; }) => ({
-        listingData: [...prev.listingData, ...result.listingData]
+        listingData: [...prev.listingData, ...result.listingData],
+        totalPages: result.totalPages,
+        listingNext: result.listingNext
       }))
     } else {
       set({
         listingData: [...result.listingData],
         listingSelected: { index: -1 },
-        contentData: []
+        contentData: [],
+        totalPages: result.totalPages,
+        listingNext: result.listingNext
       })
     }
   },

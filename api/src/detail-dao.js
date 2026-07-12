@@ -1,4 +1,5 @@
 import Detail from './detail-mapper.js';
+import { Op } from 'sequelize';
 
 export async function queryApi(query, url) {
   if (query['maxId'] != null) {

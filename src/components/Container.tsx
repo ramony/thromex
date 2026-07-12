@@ -11,10 +11,16 @@ import '~/style/Container.css';
 
 function Container() {
 
-  const loadConfig = useContainerStore((s: { loadConfig: any; }) => s.loadConfig)
+  const init = useContainerStore((s: { init: any; }) => s.init)
+  const handleEntry = useContainerStore((s: { handleEntry: any; }) => s.handleEntry)
 
   useEffect(() => {
-    loadConfig()
+    const startUp = async () => {
+      await init()
+      await handleEntry();
+    }
+
+    startUp()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

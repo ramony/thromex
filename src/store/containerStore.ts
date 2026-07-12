@@ -57,23 +57,23 @@ export const useContainerStore = create<any>((set, get) => ({
     }
     let item = listingData[index];
     set({ listingSelected: { url: item.url, index } });
-    handleUrl(item.urlFn || item.url);
+    handleUrl(item.url);
   },
 
-  handleUrls: async (urls: any, append = false) => {
+  handleUrls: async (urls: any, append = false, priority = false) => {
     console.log('handleUrls invoked', urls);
     const { handleUrl } = get();
     for (const url of urls) {
-      await handleUrl(url, append)
+      await handleUrl(url, append, priority)
     };
   },
 
-  handleUrl: async (url: any, append: any = false) => {
+  handleUrl: async (url: any, append: any = false, priority: any = false) => {
     console.log('handleUrl invoked', url);
     const { handleUrlInner } = get();
     threadPool.submit(async () => {
       await handleUrlInner(url, append);
-    })
+    }, priority)
   },
 
   handleNext: async () => {

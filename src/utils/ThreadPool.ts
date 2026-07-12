@@ -21,12 +21,16 @@ class ThreadPool {
   }
 
   // 添加任务到队列
-  submit(task) {
+  submit(task, priority = false) {
     this.onStart?.();
     if (this.activeThreads < this.maxThreads) {
       this.executeTask(task);
     } else {
-      this.taskQueue.push(task);
+      if (priority) {
+        this.taskQueue.unshift(task);
+      } else {
+        this.taskQueue.push(task);
+      }
     }
   }
 

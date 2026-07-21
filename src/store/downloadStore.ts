@@ -34,7 +34,8 @@ export const useDownloadStore = create<any>((set, get) => ({
       return;
     }
     let rules = await ConfigLoad.loadRules();
-    let contentParse = new ContentParse(rules);
+    let contentParse = new ContentParse();
+    contentParse.addRules(rules);
     addLogs("Start job");
     for (let item of downloadList) {
       if (!item.checked) {

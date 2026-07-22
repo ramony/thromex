@@ -11,7 +11,7 @@ export async function queryApi(query, url) {
     query['readFlag'] = 0
   }
   console.log('query', query)
-  const pageSize = 20;
+  const pageSize = 50;
   console.log('query', query)
   let { count, rows } = await Detail.findAndCountAll({
     where: query,

@@ -67,7 +67,8 @@ export const useDownloadStore = create<any>((set, get) => ({
         continue;
       }
       item.readFlag = 0;
-      if (skipTitleKeyword && item.title.includes(skipTitleKeyword)) {
+      let title = item.title;
+      if (skipTitleKeyword && skipTitleKeyword.split(",").some((kw: any) => title.includes(kw))) {
         console.log('skip ' + item.title);
         item.readFlag = 1;
       }

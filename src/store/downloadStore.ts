@@ -42,7 +42,7 @@ export const useDownloadStore = create<any>((set, get) => ({
         continue;
       }
       for (let i = item.from; i < item.to; i++) {
-        let url = item.url.replace("{pageNo}", i);
+        let url = item.url.replace("{pageNo}", i * (item.step || 1));
         let { listingData = [] } = await contentParse.parse(url, false);
         listingData = filterListingData(listingData, i, contentParse, item.skipTitleKeyword);
         let insertCount = await DataService.createDetail(listingData, count => {

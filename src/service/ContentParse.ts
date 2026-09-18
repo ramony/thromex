@@ -18,6 +18,19 @@ class ContentParse {
     this.ruleMatcher = new RuleMatcher(rules || []);
   }
 
+  matchContent(contentUrl) {
+    contentUrl = this.filterUrl(contentUrl);
+
+    if (!contentUrl) {
+      console.log('contentUrl is null');
+      return false;
+    }
+    console.log('parse contentUrl:' + contentUrl);
+
+    let urlRule = this.ruleMatcher.match(contentUrl)
+    return !!urlRule.rule && !!urlRule.rule.contentSupport;
+  }
+
   checkUrlRead(contentIds) {
     if (!contentIds) {
       return false;

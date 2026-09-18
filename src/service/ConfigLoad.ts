@@ -45,6 +45,10 @@ const ConfigLoad = {
   },
   async loadEntryPath() {
     return await this.loadAppConfig('entry');
+  },
+  async loadJsList() {
+    let jsList = await this.loadAppConfig('jsList')
+    return jsList;
   }
 }
 

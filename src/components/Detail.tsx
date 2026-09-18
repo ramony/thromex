@@ -37,6 +37,7 @@ export default function Detail() {
             <div className="Content-Item" key={item.key}>
               {actions}
               <div className="Content-Title">{item.title}</div>
+              <hr></hr>
               <div className="Content-Detail" dangerouslySetInnerHTML={{ __html: item.content }}></div>
               {extra}
               <div className="Content-Title">{item.title}</div>

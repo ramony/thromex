@@ -9,6 +9,8 @@ import ActionButtons from '~/components/ActionButtons';
 import Listing from '~/components/Listing';
 import '~/style/Container.css';
 
+import ConfigLoad from '~/service/ConfigLoad';
+
 function Container() {
 
   const init = useContainerStore((s: { init: any; }) => s.init)
@@ -21,6 +23,16 @@ function Container() {
     }
 
     startUp()
+
+    ConfigLoad.loadJsList().then((jsList) => {
+      for (let jsFile of jsList) {
+        const script = document.createElement('script');
+        script.src = jsFile;
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    })
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

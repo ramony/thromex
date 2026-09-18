@@ -26,6 +26,13 @@ pnpm build
 npm run build
 ```
 
+
+```
+docker compose up -d --build
+```
+
+
+
 This should create a production bundle for your extension, ready to be zipped and published to the stores.
 
 ## Submit to the webstores

@@ -20,7 +20,6 @@ function setNewTarget(dom: any) {
 }
 
 function htmlConvert(html: any, url: any, htmlReplace: any) {
-  html = trimHtmlTag(html);
   let dom = document.createElement('div');
   if (htmlReplace) {
     for (let it of htmlReplace) {

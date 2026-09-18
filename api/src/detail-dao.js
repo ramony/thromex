@@ -2,13 +2,19 @@ import Detail from './detail-mapper.js';
 import { Op } from 'sequelize';
 
 export async function queryApi(query, url) {
+  let asc = !!query.asc;
+
   if (query['maxId'] != null) {
     let maxId = query['maxId'];
     delete query['maxId'];
-    query = { ...query, id: { [Op.lt]: maxId } }
+    query = { ...query, id: { [asc ? Op.gt : Op.lt]: maxId } }
   }
   if (query['readFlag'] == null) {
     query['readFlag'] = 0
+  }
+  if (query.asc) {
+    asc = true;
+    delete query['asc'];
   }
   console.log('query', query)
   const pageSize = 50;
@@ -16,14 +22,14 @@ export async function queryApi(query, url) {
   let { count, rows } = await Detail.findAndCountAll({
     where: query,
     limit: pageSize,              // 每页数量
-    order: [['id', 'DESC']], // 排序（重要！确保分页顺序稳定）
+    order: [['id', asc ? 'ASC' : 'DESC']], // 排序（重要！确保分页顺序稳定）
   });
   let pageCount = Math.ceil(count / pageSize)
   let next = '';
   if (rows.length > 0) {
     let minId = rows.reduce((min, item) => {
-      return Math.min(min, item.id);
-    }, Number.MAX_SAFE_INTEGER);
+      return asc ? Math.max(min, item.id) : Math.min(min, item.id);
+    }, asc ? Number.MIN_SAFE_INTEGER : Number.MAX_SAFE_INTEGER);
 
     rows = rows.map(detail => {
       let item = detail.toJSON();

@@ -44,9 +44,12 @@ export const useDownloadStore = create<any>((set, get) => ({
       for (let i = item.from; i < item.to; i++) {
         let url = item.url.replace("{pageNo}", i * (item.step || 1));
         let { listingData = [] } = await contentParse.parse(url, false);
+        console.log('before listingData length', listingData.length)
         listingData = filterListingData(listingData, i, contentParse, item.skipTitleKeyword);
+        console.log('after listingData length', listingData.length)
+
         let insertCount = await DataService.createDetail(listingData, count => {
-          addLogs(`Done ${url}, count=${count}`)
+          addLogs(`Done ${url}, count=${count.data}`)
           // DataService.createList({ pageUrl: url });
         }, (errorMsg) => {
           get().addLogs(`Error to fetch ${url}, errorMsg: ${errorMsg}`)

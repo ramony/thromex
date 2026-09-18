@@ -23,6 +23,12 @@ const GetJwtToken = () => {
 const HttpClient = {
 
   async getHtml(endpoint, encoding) {
+    if (!endpoint.startsWith("https")) {
+      return await chrome.runtime.sendMessage({
+        type: 'getHtml',
+        endpoint, encoding
+      });
+    }
     let params = {
       headers: {
         'content-type': "text/html;charset=" + encoding,
@@ -33,6 +39,7 @@ const HttpClient = {
       const res = await fetch(endpoint, params);
       const buffer = await res.arrayBuffer();
       const html = new TextDecoder(encoding).decode(buffer);
+      // console.log('getHtml', html)
       return CreateSuccess(html);
     } catch (e) {
       console.log(endpoint + " getHtml error, " + e)
@@ -41,6 +48,12 @@ const HttpClient = {
   },
 
   async getJSON(endpoint) {
+    if (!endpoint.startsWith("https")) {
+      return await chrome.runtime.sendMessage({
+        type: 'getJSON',
+        endpoint
+      });
+    }
     try {
       const res = await fetch(endpoint, {
         method: 'get',
@@ -59,6 +72,13 @@ const HttpClient = {
 
 
   async postJSON(endpoint, rdata) {
+    if (!endpoint.startsWith("https")) {
+      return await chrome.runtime.sendMessage({
+        type: 'postJSON',
+        endpoint,
+        rdata
+      });
+    }
     try {
       const res = await fetch(endpoint, {
         method: 'post',
@@ -77,6 +97,13 @@ const HttpClient = {
   },
 
   async getYaml(endpoint) {
+    if (!endpoint.startsWith("https")) {
+      const res = await chrome.runtime.sendMessage({
+        type: 'getYaml',
+        endpoint
+      });
+      return res;
+    }
     try {
       const res = await fetch(endpoint, {
         method: 'get',
